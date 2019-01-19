@@ -23,6 +23,7 @@ from .serializers import TrvaleSerializer
 from .serializers import BusSerializer
 from .serializers import DriverSalarySerializer
 from .serializers import MostPopularJobs
+from .serializers import FactoryNumSerializer
 
 from django.http import Http404
 
@@ -45,9 +46,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
 
-    def job_nums(self):
+    def job_nums_obj(self):
         '''
-            job name with num of them in table 
+            return job name with num of them in table 
         '''
         try:
             job = Customer.objects.all().values('job')
@@ -64,21 +65,38 @@ class CustomerViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Http404
 
+    def place_nums_obj(self):
+        '''
+        '''
+        factory = Customer.objects.all().values('factory')
+        constract_query = []
+        constarct_obj = {}
+        for item in factory:
+            constarct_obj[ item.get('factory') ] = constarct_obj.get( item.get('factory'),0 )+1
+        for k in constarct_obj:
+            constract_query.append( {'factory':k,'num':constarct_obj[k]} )
+        return constract_query
+
+
     def partial_job(self, job):
         """
-            job that requested
+            jobs that requested
         """
         cusomer_job = Customer.objects.filter(job=job)
         return cusomer_job
 
 
     @action(detail=False, method=['get'])
-    def most_popular_job(self, request, format=None):
-        customers = self.job_nums()
+    def job_nums(self, request, format=None):
+        '''
+        '''
+        customers = self.job_nums_obj()
         serializer = MostPopularJobs(customers, many=True)
         return Response(serializer.data)
 
     def get_serializer_context(self, **kwargs):
+        '''
+        '''
         context = super(CustomerViewSet, self).get_serializer_context(**kwargs)
         context.update({
             'request':self.request,
@@ -87,8 +105,26 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
     @action(detail=False,method=['get'])
     def filter_job(self, request, job, format=None):
+        '''
+        '''
         customer = self.partial_job(job)
         serializer = CustomerSerializer(customer, many=True, context={'request':self.request})
+        return Response(serializer.data)
+
+    @action(detail=False, method=['get'] )
+    def same_place(self, request, format=None):
+        factory = self.place_nums_obj()
+        serializer = FactoryNumSerializer(factory, many=True)
+        return Response(serializer.data)
+    
+    def customer_factory(self,factory):
+        places = Customer.objects.filter(factory=factory)
+        return places
+    
+    @action(detail=False, method=['get'] )
+    def filter_place_customer(self, request, factory, format=None):
+        customer = self.customer_factory(factory)
+        serializer = CustomerSerializer(customer, many=True , context={'request':self.request})
         return Response(serializer.data)
 
 

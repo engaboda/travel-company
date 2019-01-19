@@ -21,13 +21,18 @@ customers_detail = CustomerViewSet.as_view({
     'delete':'destroy',
 })
 most_popular = CustomerViewSet.as_view({
-    'get':'most_popular_job',
+    'get':'job_nums',
 })
-
+place_nums = CustomerViewSet.as_view({
+    'get':'same_place'
+})
 customer_job = CustomerViewSet.as_view({
     'get':'filter_job',
 })
 
+customer_places = CustomerViewSet.as_view({
+    'get':'filter_place_customer',
+})
 
 
 urlpatterns = [
@@ -35,6 +40,8 @@ urlpatterns = [
     path('customer/',customers_list,name='customer-list'),
     path('customer/jobs/', most_popular ,name='most_popular_job'),
     url(r'customer/jobs/(?P<job>[\w\-]+)/', customer_job ,name='customer_job'),
+    path('customer/factory/', place_nums ,name='place_nums'),
+    url(r'customer/factory/(?P<factory>[\w\-]+)/', customer_places ,name='customer_factory'),
     path('customer/<int:pk>/',customers_detail,name='customer-detail'),
     path('drivers/', DriverList.as_view(), name='driver-list'),
     path('drivers/<int:pk>/', DriverDetail.as_view()),

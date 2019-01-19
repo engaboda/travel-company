@@ -23,6 +23,10 @@ class MostPopularJobs(serializers.Serializer):
     #     model = Customer
     #     fields = ('job','num','uri')
 
+class FactoryNumSerializer(serializers.Serializer):
+    # uri = serializers.HyperlinkedIdentityField(view_name='customer_job', format='html')
+    factory = serializers.CharField(max_length=100)
+    num = serializers.IntegerField()
 
 
 class DriverSerializer(serializers.ModelSerializer):
