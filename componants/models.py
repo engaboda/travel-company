@@ -38,6 +38,7 @@ class Driver(AbstractModel):
     holidays = models.CharField(max_length=7, choices={('fri-sat','Friday and Satrday'),('thu-fri','Friday and Thursday')})
     dependacy = models.IntegerField()
     joined_day = models.DateField(auto_now_add=True)
+    driversalary = models.ForeignKey('DriverSalary', related_name='driver_salary', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -55,16 +56,14 @@ class Travel(models.Model):
     t_place = models.CharField(max_length=100)
     esti_time = models.TimeField(auto_now=False)
     gas = models.DecimalField(max_digits=100,decimal_places=3)
+    s_time = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
         return 
 
-    def __unicode__(self):
-        return 
 
 class DriverSalary(models.Model):
-    driver = models.ForeignKey(Driver, related_name='driver_salary', on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
     salary = models.IntegerField()
     promo = models.IntegerField()

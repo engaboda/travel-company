@@ -7,10 +7,20 @@ from .models import DriverSalary
 from rest_framework import serializers
 
 class CustomerSerializer(serializers.ModelSerializer):
+    uri = serializers.HyperlinkedIdentityField(view_name='customer-detail',format='html')
     class Meta:
         model = Customer
-        fields = ('id', 'name', 'username', 'first_name', 'last_name', 'address', 'age', 'phone_number', 'job', 'factory' )
+        fields = ('uri', 'name', 'username', 'first_name', 'last_name', 'address', 'age', 'phone_number', 'job', 'factory' )
         read_only_fields= ('name',)
+
+
+class MostPopularJobs(serializers.Serializer):
+    # uri = serializers.HyperlinkedIdentityField(view_name='customer_job', format='html')
+    job = serializers.CharField(max_length=100)
+    num = serializers.IntegerField()
+
+
+
 class DriverSerializer(serializers.ModelSerializer):
     class Meta:
         model = Driver

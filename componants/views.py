@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.test.client import RequestFactory
 
 from .models import Customer 
 from .models import Driver
@@ -13,12 +14,15 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.reverse import reverse
+from rest_framework.decorators import action
+from rest_framework.request import Request
 
 from .serializers import CustomerSerializer
 from .serializers import DriverSerializer
 from .serializers import TrvaleSerializer
 from .serializers import BusSerializer
 from .serializers import DriverSalarySerializer
+from .serializers import MostPopularJobs
 
 from django.http import Http404
 
@@ -28,7 +32,8 @@ from django.http import Http404
 def api_root(request, format=None):
     return Response({
         'drivers': reverse('driver-list', request=request, format=format),
-        'customers': reverse('customer-list', request=request, format=format)
+        'customers': reverse('customer-list', request=request, format=format),
+        'jobs':reverse('most_popular_job', request=request, format=format),
     })
 
 
@@ -36,9 +41,57 @@ class CustomerViewSet(viewsets.ModelViewSet):
     """
         list and create Customer 
     """
+    context = dict(request=RequestFactory().get('/'))
     permission_classes = [permissions.IsAuthenticated]
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+
+    def job_nums(self):
+        '''
+            job name with num of them in table 
+        '''
+        try:
+            job = Customer.objects.all().values('job')
+            constract_query = []
+            constarct_obj = {}
+            for item in job:
+                constarct_obj[ item.get('job') ] = constarct_obj.get( item.get('job'),0 )+1
+                # constarct_obj['job'] = item.get('job')
+                # constarct_obj['num'] = constarct_obj.get( item.get('job') )
+            for k in constarct_obj:
+                constract_query.append( {'job':k,'num':constarct_obj[k]} )
+            print(constract_query)
+            return constract_query
+        except Exception as e:
+            return Http404
+
+    def partial_job(self, job):
+        """
+            job that requested
+        """
+        cusomer_job = Customer.objects.filter(job=job)
+        return cusomer_job
+
+
+    @action(detail=False, method=['get'])
+    def most_popular_job(self, request, format=None):
+        customers = self.job_nums()
+        serializer = MostPopularJobs(customers, many=True)
+        return Response(serializer.data)
+
+    def get_serializer_context(self, **kwargs):
+        context = super(CustomerViewSet, self).get_serializer_context(**kwargs)
+        context.update({
+            'request':Request,
+        })
+        return context
+
+    @action(detail=False,method=['get'])
+    def filter_job(self, request, job, format=None):
+        customer = self.partial_job(job)
+        serializer = CustomerSerializer(customer, many=True, context={'request':self.request})
+        return Response(serializer.data)
+
 
 class DriverList(APIView):
     """
