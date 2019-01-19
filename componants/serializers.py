@@ -19,6 +19,10 @@ class MostPopularJobs(serializers.Serializer):
     job = serializers.CharField(max_length=100)
     num = serializers.IntegerField()
 
+    # class Meta:
+    #     model = Customer
+    #     fields = ('job','num','uri')
+
 
 
 class DriverSerializer(serializers.ModelSerializer):

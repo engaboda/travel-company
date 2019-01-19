@@ -41,7 +41,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
     """
         list and create Customer 
     """
-    context = dict(request=RequestFactory().get('/'))
     permission_classes = [permissions.IsAuthenticated]
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
@@ -82,7 +81,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     def get_serializer_context(self, **kwargs):
         context = super(CustomerViewSet, self).get_serializer_context(**kwargs)
         context.update({
-            'request':Request,
+            'request':self.request,
         })
         return context
 

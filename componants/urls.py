@@ -34,7 +34,7 @@ urlpatterns = [
     path('',  api_root),
     path('customer/',customers_list,name='customer-list'),
     path('customer/jobs/', most_popular ,name='most_popular_job'),
-    url(r'customer/(?P<job>[\w\-]+)/', customer_job ,name='customer_job'),
+    url(r'customer/jobs/(?P<job>[\w\-]+)/', customer_job ,name='customer_job'),
     path('customer/<int:pk>/',customers_detail,name='customer-detail'),
     path('drivers/', DriverList.as_view(), name='driver-list'),
     path('drivers/<int:pk>/', DriverDetail.as_view()),
