@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.test.client import RequestFactory
 
 from .models import Customer 
 from .models import Driver
@@ -16,6 +15,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.decorators import action
 from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory
 
 from .serializers import CustomerSerializer
 from .serializers import DriverSerializer
@@ -35,6 +35,7 @@ def api_root(request, format=None):
         'drivers': reverse('driver-list', request=request, format=format),
         'customers': reverse('customer-list', request=request, format=format),
         'jobs':reverse('most_popular_job', request=request, format=format),
+        'factory':reverse('place_nums', request=request, format=format),
     })
 
 
@@ -51,7 +52,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return job name with num of them in table 
         '''
         try:
-            job = Customer.objects.all().values('job')
+            job = Customer.objects.all().values('job','id')
             constract_query = []
             constarct_obj = {}
             for item in job:
@@ -60,7 +61,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
                 # constarct_obj['num'] = constarct_obj.get( item.get('job') )
             for k in constarct_obj:
                 constract_query.append( {'job':k,'num':constarct_obj[k]} )
-            print(constract_query)
+            # print(constract_query)
             return constract_query
         except Exception as e:
             return Http404
@@ -91,7 +92,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
         '''
         '''
         customers = self.job_nums_obj()
-        serializer = MostPopularJobs(customers, many=True)
+        self.get_serializer_context().get('request').data['job']='eng'
+        print(self.get_serializer_context())
+        serializer = MostPopularJobs(customers, many=True , context=self.get_serializer_context() )
         return Response(serializer.data)
 
     def get_serializer_context(self, **kwargs):
@@ -108,7 +111,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         '''
         '''
         customer = self.partial_job(job)
-        serializer = CustomerSerializer(customer, many=True, context={'request':self.request})
+        serializer = CustomerSerializer(customer, many=True , context={'request':self.request})
         return Response(serializer.data)
 
     @action(detail=False, method=['get'] )
